@@ -1,0 +1,90 @@
+---
+title: "W09 Task"
+author: "Maddy McGreer"
+date: "`r format(Sys.time(), '%B %d, %Y')`"
+output:
+  pdf_document:
+    toc: yes
+  html_document:
+    keep_md: yes
+    toc: yes
+    toc_float: yes
+    code_folding: hide
+    fig_height: 6
+    fig_width: 12
+    fig_align: center
+---
+
+```{r, echo=FALSE}
+knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE)
+```
+
+```{r load_libraries, include=FALSE}
+# Use this R-Chunk to load all your libraries!
+#install.packages("tidyverse") # run this line once in console to get package
+library(tidyverse)
+library(ggplot2)
+library(lubridate)
+library(riem)
+```
+
+```{r load_data}
+# Use this R-Chunk to import all your datasets!
+carwash_data <- read.csv("https://byuistats.github.io/M335/data/carwash.csv")
+
+str(carwash_data)
+```
+
+## Background
+
+_How does the weather affect car wash sales in Rexburg, Idaho?_
+
+## Data Wrangling
+
+```{r tidy_data}
+# Use this R-Chunk to clean & wrangle your data!
+business_timezone <- "America/Denver"
+
+carwash_data$timestamp <- with_tz(carwash_data$timestamp, tzone=business_timezone)
+
+head(carwash_data$timestamp)
+
+carwash_data$hour_group <- ceiling_data(carwash_data$timestamp, unit="hour")
+
+head(carwash_data$hour_group)
+
+start_date <- as.Date("2023-04-01")
+end_date <- as.Date("2023-07-31")
+
+temperature_data <- riem_measures(station="RXE", date_start = start_date, date_end = end_date)
+
+head(temperature_data)
+
+temperature_data$hour_group <- ceiling_date(temperature_data$datetime, unit = "hour")
+
+head(temperature_data$hour_group)
+
+merged_data <- merge(hourly_sales, temperature_data, by = "hour_group")
+
+head(merged_data)
+```
+
+## Data Visualization
+
+```{r plot_data}
+# Use this R-Chunk to plot & visualize your data!
+
+ggplot(merged_data, aes(x=temperature, y=sales, color=hour_group)) +
+  geom_line() +
+  labs(x="Temperature", y="Sales", color="Hour of the Day") +
+  theme_minimal()
+
+
+```
+
+## Conclusions
+_Based on the visualizations and analysis of the relationship between sales and temperature by hour of the day, we can derive a couple of key takeaways:
+
+Sales tend to increase as the temperature rises during the day: The line plot shows a generally positive trend between temperature and sales.. 
+
+Peak sales occur during the afternoon hours. It indicates that the highest sales occur during the afternoon hours, typically between 12 PM and 4 PM. This could be attributed to factors such as increased leisure activities or people running errands during this time._
