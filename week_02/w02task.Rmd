@@ -1,0 +1,77 @@
+---
+title: 'Week 2 Task: Visualizing Large Distributions'
+author: "Maddy McGreer"
+date: "`r format(Sys.time(), '%B %d, %Y')`"
+output:
+  pdf_document:
+    toc: yes
+  html_document:
+    keep_md: yes
+    toc: yes
+    toc_float: yes
+    code_folding: hide
+    fig_height: 6
+    fig_width: 12
+    fig_align: center
+---
+
+```{r, echo=FALSE}
+knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE)
+```
+
+```{r load_libraries, include=FALSE}
+# Use this R-Chunk to load all your libraries!
+#install.packages("tidyverse") # run this line once in console to get package
+library(tidyverse)
+library(nycflights13)
+
+```
+
+```{r load_data}
+# Use this R-Chunk to import all your datasets!
+
+
+```
+
+## Background
+
+_Analyzing the relationship between flight distance and air time using the "nycflights13" dataset. The dataset contains information about flights departing from New York City airports, including variables such as departure delay, arrival delay, distance, and air time. By visualizing the univariate distributions of distance and air time separately, we can understand their individual distributions and patterns. Additionally, the bivariate scatter plot allows us to explore how distance and air time relate to each other, providing insights into the duration of flights for different distances._
+
+## Data Wrangling
+
+```{r tidy_data}
+# Use this R-Chunk to clean & wrangle your data!
+
+```
+
+## Data Visualization
+
+```{r plot_data}
+# Use this R-Chunk to plot & visualize your data!
+# Univariate distribution of distance
+ggplot(flights, aes(x = distance)) +
+  geom_histogram(binwidth = 100, color = "white", fill = "blue") +
+  labs(title = "Distribution of Distance",
+       x = "Distance (miles)",
+       y = "Frequency")
+
+# Univariate distribution of air_time
+ggplot(flights, aes(x = air_time)) +
+  geom_histogram(binwidth = 10, color = "white", fill = "green") +
+  labs(title = "Distribution of Air Time",
+       x = "Air Time (minutes)",
+       y = "Frequency")
+
+# Bivariate summary of distance and air_time
+ggplot(flights, aes(x = distance, y = air_time)) +
+  geom_point(alpha = 0.6, color = "red") +
+  labs(title = "Distance vs. Air Time",
+       x = "Distance (miles)",
+       y = "Air Time (minutes)")
+
+
+```
+
+## Conclusions
+
+_The histogram of flight distances shows that shorter flights are more common, with a peak around 500 miles. The histogram of air times indicates that most flights have durations between 50 and 200 minutes, with a peak around 100 minutes. The scatter plot reveals a positive correlation between distance and air time, suggesting that longer distances generally require more time. However, there is significant variation in air time for flights of similar distances, indicating other factors may influence flight duration._
