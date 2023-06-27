@@ -1,0 +1,111 @@
+---
+title: "W10 Case Study: Interaction with Time"
+author: "Maddy McGreer"
+date: "`r format(Sys.time(), '%B %d, %Y')`"
+output:
+  html_document:  
+    keep_md: true
+    self_contained: true
+    include_graphics: true
+    toc: true
+    toc_float: true
+    code_folding: hide
+    fig_height: 6
+    fig_width: 12
+    fig_align: 'center'
+---
+
+```{r, echo=FALSE}
+knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE)
+```
+
+```{r load_libraries, include=FALSE}
+# Use this R-Chunk to load all your libraries!
+#install.packages("tidyverse") # run this line once in console to get package
+library(tidyverse)
+library(quantmod)
+library(dygraphs)
+library(ggplot2)
+library(htmlwidgets)
+
+```
+
+```{r load_data}
+# Use this R-Chunk to import all your datasets!
+
+
+```
+
+## Background
+
+_Your data science income has ballooned, and you need to find somewhere to invest $25,000 that you have saved over the last year. You have a savvy investment friend that is kind enough to tell you ten stocks she has been watching during the last year. You will need to visualize the last five years performance to help in the conversation with your friend._
+
+## Data Wrangling
+
+```{r tidy_data}
+# Use this R-Chunk to clean & wrangle your data!
+
+tickers <- c("CXW", "F", "GM", "KR", "WDC", "NKE", "T", "WDAY", "WFC", "WMT")
+
+stock_data_list <- list()
+
+for (ticker in tickers) {
+  getSymbols(ticker, from = Sys.Date() - 5 * 365)
+  
+  Volume = as.numeric(Vo(get(ticker)))
+  Price = as.numeric(Ad(get(ticker)))
+  Low = as.numeric(Lo(get(ticker)))
+
+  stock_data <- get(ticker)  # Get stock data
+
+  date_column <- stock_data$Date
+  closing_price_column <- stock_data$Close
+
+  stock_data_list[[ticker]] <- stock_data
+
+  dygraph_object <- dygraph(stock_data)
+
+  dygraph_object <- dygraph_object %>%
+    dySeries(closing_price_column, label = ticker)
+  
+}
+
+```
+
+## Data Visualization
+
+```{r plot_data}
+# Use this R-Chunk to plot & visualize your data!
+# Create dygraph objects
+dygraph_objects <- lapply(tickers, function(symbol) {
+  stock_data <- as.data.frame(get(symbol))
+  dygraph(stock_data, main = paste("Stock Performance of", symbol)) %>%
+    dySeries(paste0(symbol, ".Adjusted"), label = "Adjusted Close") %>%
+    dyRangeSelector() %>%
+    dyOptions(stackedGraph = TRUE)
+})
+
+# Combine dygraph objects into a single HTML element
+dygraph_list <- htmltools::tagList(dygraph_objects)
+
+# Print the dygraph list
+dygraph_list
+
+
+```
+
+```{r}
+
+# How an investor would use volume and price in their trading strategy
+ggplot(stock_data, aes(x = Volume, y = Price)) +
+  geom_point(color = "blue") +
+  labs(title = "Volume vs. Stock Price",
+       x = "Volume",
+       y = "Stock Price") +
+  theme_minimal()
+```
+
+
+## Conclusions
+
+_Dygraphs was used to display the stock performance of different symbols over time, with a focus on the adjusted closing price. The interactive dygraphs allowed for easy navigation and comparison of multiple stocks on a single graph. On the other hand, ggplot2 was used to create a scatter plot that showcased the relationship between volume and stock price. The scatter plot helped analyze the impact of trading volume on stock prices, providing insights into potential trading strategies._
