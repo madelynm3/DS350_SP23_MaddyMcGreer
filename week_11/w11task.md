@@ -1,0 +1,82 @@
+---
+title: "W11 Task: Spatial Data and Measure Data"
+author: "Maddy McGreer"
+date: "June 28, 2023"
+output:
+  html_document:  
+    keep_md: true
+    toc: true
+    toc_float: true
+    code_folding: hide
+    fig_height: 6
+    fig_width: 12
+    fig_align: 'center'
+---
+
+
+
+
+
+
+```r
+# Use this R-Chunk to import all your datasets!
+```
+
+## Background
+
+_Place Task Background Here_
+
+## Data Wrangling
+
+
+```r
+# Use this R-Chunk to clean & wrangle your data!
+state_shape <- us_states() %>% 
+  filter(jurisdiction_type == "state", 
+         state_abbr != "AK", 
+         state_abbr != "HI")
+
+county_shape <- us_counties(states = "ID")
+
+city_data <- us_cities() %>%
+  filter(state_abbr != "AK",
+         state_abbr != "HI")%>%
+  arrange(desc(population)) %>%
+  mutate(rank = as.integer(row_number()))
+
+top_cities <- city_data %>%
+  filter(rank <= 144)
+
+top_cities$rank <- as.factor(top_cities$rank)
+
+top_cities <- top_cities %>%
+  mutate(lon = st_coordinates(geometry)[, "X"],
+         lat = st_coordinates(geometry)[, "Y"])
+```
+
+## Data Visualization
+
+
+```r
+# Use this R-Chunk to plot & visualize your data!
+
+## Plot
+ggplot() +
+  geom_sf(data = state_shape) +
+  geom_sf(data = county_shape, fill = NA, color = "grey") +
+  geom_point(data = top_cities, aes(x = lon, y = lat), color = "blue", size = 0.5) +
+  geom_label_repel(data = top_cities, aes(x = lon, y = lat, label = name_2010), 
+                   max.overlaps = 9, size = 3) +
+  theme_minimal() +
+  theme(
+    axis.title.x = element_blank(),
+    axis.title.y = element_blank()
+  ) +
+  guides(color = guide_legend(title = "Population")) +
+  theme(legend.position = "right")
+```
+
+![](w11task_files/figure-html/plot_data-1.png)<!-- -->
+
+## Conclusions
+
