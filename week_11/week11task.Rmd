@@ -1,0 +1,82 @@
+---
+title: "Week 11: Getting into SHP"
+author: "Maddy McGreer"
+date: "`r format(Sys.time(), '%B %d, %Y')`"
+output:
+  html_document:  
+    keep_md: true
+    toc: true
+    toc_float: true
+    code_folding: hide
+    fig_height: 6
+    fig_width: 12
+    fig_align: 'center'
+---
+
+```{r, echo=FALSE}
+knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE)
+```
+
+```{r load_libraries, include=FALSE}
+# Use this R-Chunk to load all your libraries!
+#install.packages("tidyverse") # run this line once in console to get package
+library(tidyverse)
+library(ggplot2)
+library(sf)
+```
+
+```{r load_data}
+# Use this R-Chunk to import all your datasets!
+
+wells <- st_read("/Users/maddy/Downloads/Wells/Wells.shp")
+dams <- st_read("/Users/maddy/Downloads/Idaho_Dams/Dam_Safety.shp")
+water <- st_read("/Users/maddy/Downloads/water/hyd250.shp")
+shp <- st_read("/Users/maddy/Downloads/shp/County-AK-HI-Moved-USA-Map.shp")
+
+```
+
+## Background
+
+_Map Snake River and Henry's Fork water sources in Idaho_
+
+## Data Wrangling
+
+```{r tidy_data}
+# Use this R-Chunk to clean & wrangle your data!
+# Filter wells dataset
+filtered_wells <- wells[wells$production > 5000, ]
+
+# Filter dams dataset
+filtered_dams <- dams[dams$SurfaceAre> 50, ]
+
+# Filter water bodies dataset
+filtered_water <- water[water$FEAT_NAME %in% c("Snake River", "Henrys Fork"), ]
+
+filtered_states <- shp[shp$StateName %in% c("Idaho"), ]
+
+
+```
+
+## Data Visualization
+
+```{r plot_data}
+# Use this R-Chunk to plot & visualize your data!
+idaho_map <- ggplot() +
+  geom_sf(data = filtered_states, fill = "lightgray", color = "white") +
+  geom_sf(data = filtered_water, fill = "blue") +
+  geom_sf(data = filtered_dams, fill = "red") +  
+  geom_sf(data = filtered_wells, fill = "blue") +  
+  labs(title = "Water System Features in Idaho")
+
+print(idaho_map)
+
+ggsave("idaho_map.png", plot = idaho_map, width = 10, height = 8)
+
+
+
+
+```
+
+## Conclusions
+
+_Shows water sources in Idaho for Snake River and Henry's Fork._
