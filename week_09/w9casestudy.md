@@ -1,0 +1,141 @@
+---
+title: "W09 Case Study - It's About Time"
+author: "Maddy McGreer"
+date: "July 06, 2023"
+output:
+  html_document:
+    keep_md: yes
+    toc: yes
+    toc_float: yes
+    code_folding: hide
+    fig_height: 6
+    fig_width: 12
+    fig_align: center
+  pdf_document:
+    toc: yes
+---
+
+
+
+
+
+
+```r
+# Use this R-Chunk to import all your datasets!
+
+sales_data <- read.csv ("https://byuistats.github.io/M335/data/sales.csv")
+```
+
+## Background
+
+_We have transaction data for a few businesses that have been in operation for three months. Each of these companies has come to your investment company for a loan to expand their business. Your boss has asked you to go through the transactions for each business and provide daily, weekly, and monthly gross revenue summaries and comparisons. Your boss would like a short write-up with tables and visualizations that help with the decision of which company did the best over the three-month period. You will also need to provide a short paragraph with your recommendation after building your analysis._
+
+## Data Wrangling
+
+
+```r
+# Use this R-Chunk to clean & wrangle your data!
+
+# Convert time from UTC to MST
+sales_data$Time <- with_tz(ymd_hms(sales_data$Time), "MST")
+
+# Remove rows with missing or invalid values
+sales_data <- na.omit(sales_data)
+```
+
+## Data Visualization
+
+
+```r
+# Use this R-Chunk to plot & visualize your data!
+
+# Aggregate data at the daily level
+daily_revenue <- sales_data %>%
+  mutate(date = as_date(date(Time))) %>%
+  group_by(Name, date) %>%
+  summarise(revenue = sum(Amount)) %>%
+  ungroup()
+
+# Aggregate data at the weekly level
+weekly_revenue <- sales_data %>%
+  mutate(week = floor_date(Time, "week")) %>%
+  group_by(Name, week) %>%
+  summarise(revenue = sum(Amount)) %>%
+  ungroup()
+
+# Aggregate data at the monthly level
+monthly_revenue <- sales_data %>%
+  mutate(month = floor_date(Time, "month")) %>%
+  group_by(Name, month) %>%
+  summarise(revenue = sum(Amount)) %>%
+  ungroup()
+
+# Visualization: Gross revenue over time (daily)
+ggplot(daily_revenue, aes(x = date, y = revenue, color = Name)) +
+  geom_line() +
+  labs(title = "Gross Revenue Over Time (Daily)",
+       x = "Date", y = "Revenue") +
+  theme_minimal()
+```
+
+![](w9casestudy_files/figure-html/plot_data-1.png)<!-- -->
+
+```r
+# Visualization: Gross revenue over time (weekly)
+ggplot(weekly_revenue, aes(x = week, y = revenue, color = Name)) +
+  geom_line() +
+  labs(title = "Gross Revenue Over Time (Weekly)",
+       x = "Week", y = "Revenue") +
+  theme_minimal()
+```
+
+![](w9casestudy_files/figure-html/plot_data-2.png)<!-- -->
+
+```r
+# Visualization: Gross revenue over time (monthly)
+ggplot(monthly_revenue, aes(x = month, y = revenue, color = Name)) +
+  geom_line() +
+  labs(title = "Gross Revenue Over Time (Monthly)",
+       x = "Month", y = "Revenue") +
+  theme_minimal()
+```
+
+![](w9casestudy_files/figure-html/plot_data-3.png)<!-- -->
+
+
+```r
+# Count the number of transactions per company
+customer_traffic <- sales_data %>%
+  group_by(Name) %>%
+  summarise(traffic = n_distinct(Amount)) %>%
+  ungroup()
+
+# Visualization: Customer traffic per company
+ggplot(customer_traffic, aes(x = Name, y = traffic)) +
+  geom_bar(stat = "identity", fill = "skyblue") +
+  labs(title = "Customer Traffic per Company",
+       x = "Company", y = "Number of Transactions") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
+
+![](w9casestudy_files/figure-html/unnamed-chunk-2-1.png)<!-- -->
+
+
+```r
+# Extract hour from the time
+sales_data$hour <- hour(sales_data$Time)
+
+# Visualization: Hours of operation per company
+ggplot(sales_data, aes(x = hour, fill = Name)) +
+  geom_histogram(binwidth = 1) +
+  labs(title = "Hours of Operation per Company",
+       x = "Hour", y = "Number of Transactions") +
+  theme_minimal() +
+  theme(legend.position = "top")
+```
+
+![](w9casestudy_files/figure-html/unnamed-chunk-3-1.png)<!-- -->
+
+## Conclusions
+_After analyzing the data I would say that the company that did best over a 3-month period would be HotDiggity. HotDiggity generated the most revenue and was second in customer traffic._
