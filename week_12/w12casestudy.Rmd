@@ -1,0 +1,94 @@
+---
+title: "W12 Case Study"
+author: "Maddy McGreer"
+date: "`r format(Sys.time(), '%B %d, %Y')`"
+output:
+  html_document:  
+    keep_md: true
+    toc: true
+    toc_float: true
+    code_folding: hide
+    fig_height: 6
+    fig_width: 12
+    fig_align: 'center'
+---
+
+```{r, echo=FALSE}
+knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE)
+```
+
+```{r load_libraries, include=FALSE}
+# Use this R-Chunk to load all your libraries!
+#install.packages("tidyverse") # run this line once in console to get package
+library(tidyverse)
+library(USAboundaries)
+library(sf)
+library(ggplot2)
+library(ggrepel)
+library(leaflet)
+```
+
+```{r load_data}
+# Use this R-Chunk to import all your datasets!
+
+
+```
+
+## Background
+
+_Use leaflet to recreate the visualizations of the US map and counties._
+
+## Data Wrangling
+
+```{r tidy_data}
+# Use this R-Chunk to clean & wrangle your data!
+state_shape <- us_states() %>% 
+  filter(jurisdiction_type == "state", 
+         state_abbr != "AK", 
+         state_abbr != "HI")
+
+county_shape <- us_counties(states = "ID")
+
+city_data <- us_cities() %>%
+  filter(state_abbr != "AK",
+         state_abbr != "HI")%>%
+  arrange(desc(population)) %>%
+  mutate(rank = as.integer(row_number()))
+
+top_cities <- city_data %>%
+  filter(rank <= 50)
+
+top_cities$rank <- as.factor(top_cities$rank)
+
+top_cities <- top_cities %>%
+  mutate(lon = st_coordinates(geometry)[, "X"],
+         lat = st_coordinates(geometry)[, "Y"])
+
+```
+
+## Data Visualization
+
+```{r plot_data}
+# Use this R-Chunk to plot & visualize your data!
+
+## Create Leaflet Map
+leaflet() %>%
+  addTiles() %>%
+  addPolygons(data = state_shape, color = "black", fill = "transparent") %>%
+  addPolygons(data = county_shape, fill = "transparent", color = "grey") %>%
+  addCircleMarkers(data = top_cities, lng = ~lon, lat = ~lat, color = "blue", radius = 2) %>%
+  addLabelOnlyMarkers(data = top_cities, lng = ~lon, lat = ~lat, label = ~name_2010, labelOptions = labelOptions(noHide = TRUE)) %>%
+  addLegend(position = "bottomright", colors = "blue", labels = "Population") 
+
+
+
+
+```
+
+## Conclusions
+
+_In the `plot_data` chunk, I've replaced the `geom_point` and `geom_label_repel` layers with the corresponding leaflet functions._
+
+_`geom_point` is replaced with `addCircleMarkers`, which adds circular markers to the leaflet map. The `lng` and `lat` arguments specify the longitude and latitude columns from the `top_cities` dataset._
+_`geom_label_repel` is replaced with `addLabelOnlyMarkers`, which adds label markers to the leaflet map. The `lng` and `lat` arguments specify the longitude and latitude columns from the `top_cities` dataset, and the `label` argument specifies the column with the labels (`name_2010` in this case)._
+
